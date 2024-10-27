@@ -6,7 +6,7 @@ export function createApp() {
 
 	app.use('/api/users', usersRouter);
 	app.get('/', (req, res) => {
-		res.send('Hello');
+		res.send('Hello 1');
 	});
 
 	return app;
