@@ -1,5 +1,8 @@
 name: Build and Deploy to GKE
 
+permissions:
+  packages: write
+  contents: read  
 on:
   push:
     branches:
