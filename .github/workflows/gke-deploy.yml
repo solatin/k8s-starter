@@ -1,0 +1,57 @@
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GKE_SA_KEY: ${{ secrets.GKE_SA_KEY }}
+      GITHUB_REGISTRY: ghcr.io
+      IMAGE_NAME: my-app  # Update to your app name
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Step 3: Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t $GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME:latest .
+
+      # Step 4: Push the Docker image to GitHub Container Registry
+      - name: Push Docker image
+        run: |
+          docker push $GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME:latest
+
+      # Step 5: Set up Google Cloud SDK
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+
+      # Step 6: Authenticate kubectl
+      - name: Authenticate kubectl
+        run: |
+          echo "${{ secrets.GKE_SA_KEY }}" > ${HOME}/gke-key.json
+          gcloud auth activate-service-account --key-file=${HOME}/gke-key.json
+          gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }} --region ${{ secrets.REGION }} --project ${{ secrets.GCP_PROJECT_ID }}
+
+      # Step 7: Deploy to GKE
+      - name: Deploy to GKE
+        run: |
+          # Replace the image name in deployment.yaml with the new image
+          sed -i "s|IMAGE_NAME|$GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME:latest|g" deployment.yaml
+          # Apply the configuration to GKE
+          kubectl apply -f deployment.yaml
