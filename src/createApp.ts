@@ -1,10 +1,13 @@
-import express from "express";
-import usersRouter from "./routes/users";
+import express from 'express';
+import usersRouter from './routes/users';
 
 export function createApp() {
-  const app = express();
+	const app = express();
 
-  app.use("/api/users", usersRouter);
+	app.use('/api/users', usersRouter);
+	app.get('/', (req, res) => {
+		res.send('Hello');
+	});
 
-  return app;
+	return app;
 }
