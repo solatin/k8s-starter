@@ -15,8 +15,7 @@ jobs:
     env:
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       GITHUB_REGISTRY: ghcr.io
-      IMAGE_NAME: my-app # Update to your app name
-
+      IMAGE_NAME: my-app:${{ github.sha }}
     steps:
       # Step 1: Checkout the code
       - name: Checkout code
@@ -29,12 +28,12 @@ jobs:
       # Step 3: Build and Push the Docker image
       - name: Build Docker image
         run: |
-          docker build -t $GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME:${{ github.sha }} .
+          docker build -t $GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME .
 
       # Step 4: Push the Docker image to GitHub Container Registry
       - name: Push Docker image
         run: |
-          docker push $GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME:${{ github.sha }}
+          docker push $GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME
 
       # Step 5: Set up Google Cloud SDK
       - name: Set up Google Cloud SDK
@@ -63,6 +62,7 @@ jobs:
       - name: Deploy to GKE
         run: |
           # Replace the image name in deployment.yaml with the new image
-          sed -i "s|IMAGE_NAME|$GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME:latest|g" deployment.yaml
+          sed -i "s|IMAGE_NAME|$GITHUB_REGISTRY/${{ github.repository }}/$IMAGE_NAME|g" deployment.yaml
+          cat deployment.yaml
           # Apply the configuration to GKE
           kubectl apply -f deployment.yaml
