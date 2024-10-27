@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: ghcr.io/solatin/k8s-starter/my-app  # Docker image
+        image: IMAGE_NAME 
         ports:
         - containerPort: 80
