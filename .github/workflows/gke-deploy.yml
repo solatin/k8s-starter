@@ -14,7 +14,6 @@ jobs:
 
     env:
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      GKE_SA_KEY: ${{ secrets.GKE_SA_KEY }}
       GITHUB_REGISTRY: ghcr.io
       IMAGE_NAME: my-app  # Update to your app name
 
@@ -47,9 +46,8 @@ jobs:
       # Step 6: Authenticate kubectl
       - name: Authenticate kubectl
         run: |
-          echo "${{ secrets.TEST }}"
-          echo "${{ secrets.GKE_SA_KEY }}"
-          echo "${{ secrets.GKE_SA_KEY }}" > ${HOME}/gke-key.json
+          echo "${{ secrets.GKE_SA_KEY_BASE64 }}"
+          echo "${{ secrets.GKE_SA_KEY }}" | base64 --decode > ${HOME}/gke-key.json
           cat ${HOME}/gke-key.json
           gcloud auth activate-service-account --key-file=${HOME}/gke-key.json
           gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }} --region ${{ secrets.REGION }} --project ${{ secrets.GCP_PROJECT_ID }}
