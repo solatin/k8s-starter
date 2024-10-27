@@ -48,7 +48,7 @@ jobs:
       - name: Authenticate kubectl
         run: |
           echo "${{ secrets.GKE_SA_KEY }}" > ${HOME}/gke-key.json
-          cat gke-key.json
+          cat ${HOME}/gke-key.json
           gcloud auth activate-service-account --key-file=${HOME}/gke-key.json
           gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }} --region ${{ secrets.REGION }} --project ${{ secrets.GCP_PROJECT_ID }}
 
